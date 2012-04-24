@@ -10,4 +10,27 @@ body {
   background-repeat: repeat-x;
   background-position: center center;
   cursor: pointer;
+  text-align: center;
+}
+.level {
+  width: 600px;
+  height: 300px;
+  border: 1px solid black;
+  display: inline-block;
+  position: absolute;
+}
+#level-0 {
+  z-index: 3;
+}
+#level-1 {
+  z-index: 2;
+}
+#level-2 {
+  z-index: 1;
+}
+.element {
+  margin: 0px;
+  padding: 0px;
+  position: absolute;
+  border: 1px solid black;
 }
