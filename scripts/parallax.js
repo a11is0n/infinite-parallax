@@ -6,7 +6,6 @@ var backgroundPath = 'images/background.png';
 var backgroundHeight;
 var elementPathPrefix = 'images/element';
 var elementPathPostfix = '.png';
-var elementCount = 0;
 
 /**
  * Variables for elements in the landscape
@@ -26,8 +25,12 @@ var level0Top, level1Top, level2Top;
 var level0Offset = 10;
 var level1Offset = 20;
 var level2Offset = 40;
-var triple = [];
-var double = [];
+var triple = []; // x-values of centers for 3-element levels
+var double = []; // x-values of centers for 2-element levels
+var level0ElementHalfWidth;
+var level1ElementHalfWidth;
+var level2ElementHalfWidth;
+var frontCount = 3; // Start with 3 elements in front level
 
 /*
  * When the document is ready, set everything up
@@ -48,7 +51,21 @@ function setUp() {
   levelWidth = $('.level').width();
   
   // Set the variables for manipulating elements in the landscape
-  level2Top = level2Offset;
+  level2Top = 0;
+  
+  // Initial level 0 elements
+  $level0.append('<img class="element" src="images/element0.png" />');
+  $level0.append('<img class="element" src="images/element1.png" />');
+  $level0.append('<img class="element" src="images/element2.png" />');
+  
+  // Initial level 1 elements
+  $level1.append('<img class="element" src="images/element0.png" />');
+  $level1.append('<img class="element" src="images/element5.png" />');
+  
+  // Initial level 2 elements
+  $level2.append('<img class="element" src="images/element3.png" />');
+  $level2.append('<img class="element" src="images/element4.png" />');
+  $level2.append('<img class="element" src="images/element5.png" />');
 
   // Get the height of the current background image
   var backgroundImage = new Image();
@@ -65,46 +82,42 @@ function setUp() {
     elementWidth = this.width;
     elementHeight = this.height;
     // These are set here since they depend on elementWidth and elementHeight
-    level0Top = landscapeHeight - elementHeight;
-    level1Top = (landscapeHeight - (elementHeight * level1Scale)) / 2;
-    var halfElementWidth = elementWidth / 2;
+    level0Top = landscapeHeight - elementHeight - (level0Offset / 2);
+    level1Top = ((landscapeHeight - (elementHeight * level1Scale)) / 2) - (level1Offset / 2);
     var third = levelWidth / 3;
-    triple[0] = (third / 2) - halfElementWidth;
+    triple[0] = (third / 2);
     triple[1] = triple[0] + third;
     triple[2] = triple[1] + third;
     var half = levelWidth / 2;
-    double[0] = (half / 2) - halfElementWidth;
-    double[1] = double[0] + half;
+    double[0] = third;
+    double[1] = third * 2;
+    level0ElementHalfWidth = elementWidth / 2;
+    level1ElementHalfWidth = (elementWidth * level1Scale) / 2;
+    level2ElementHalfWidth = (elementWidth * level2Scale) / 2;
     // Set initial element positions here since they depend on above variables
     var $level0Elements = $level0.find('.element');
     $.each($level0Elements, function(index) {
       $(this).css({
         top: ((Math.random() * level0Offset) + level0Top) + 'px',
-        left: ((Math.random() * level0Offset) + triple[index]) + 'px'
+        left: ((Math.random() * level0Offset) + triple[index] - level0ElementHalfWidth) + 'px'
       });
     });
-    /*$level0.find('.element').css({
-      top: ((Math.random() * level0Offset) + level0Top) + 'px',
-      left: triple0 + 'px'
-    });*/
-    $level1.find('.element').css('top', level1Top + 'px');
-    $level2.find('.element').css('top', level2Top + 'px');
+    var $level1Elements = $level1.find('.element');
+    $.each($level1Elements, function(index) {
+      $(this).css({
+        top: ((Math.random() * level1Offset) + level1Top) + 'px',
+        left: ((Math.random() * level1Offset) + double[index] - level1ElementHalfWidth) + 'px'
+      });
+    });
+    var $level2Elements = $level2.find('.element');
+    $.each($level2Elements, function(index) {
+      $(this).css({
+        top: ((Math.random() * level2Offset) + level2Top) + 'px',
+        left: ((Math.random() * level2Offset) + triple[index] - level2ElementHalfWidth) + 'px'
+      });
+    });
   }
   element.src = elementPathPrefix + 0 + elementPathPostfix;
-  
-  // Initial level 0 elements
-  $level0.append('<img class="element" src="images/element0.png" />');
-  $level0.append('<img class="element" src="images/element1.png" />');
-  $level0.append('<img class="element" src="images/element2.png" />');
-  
-  // Initial level 1 elements
-  $level1.append('<img class="element" src="images/element0.png" />');
-  $level1.append('<img class="element" src="images/element5.png" />');
-  
-  // Initial level 2 elements
-  $level2.append('<img class="element" src="images/element3.png" />');
-  $level2.append('<img class="element" src="images/element4.png" />');
-  $level2.append('<img class="element" src="images/element5.png" />');
   
   $(document).mousemove(changePositions);
   $landscape.click(moveForward);
@@ -132,11 +145,9 @@ function changePositions(event) {
    * when the mouse is at the bottom of window the top of the image is shown.
    * The x position is kind of whatever arbitrarily looked good.
    */
-  var bgX = (mouseX / width) * backgroundMax;
+  var bgX = -(mouseX / width) * backgroundMax;
   var bgY = -(mouseY / height) * backgroundMax;
   $landscape.css('backgroundPosition', bgX + 'px ' + bgY + 'px');
-  
-  $level0.find('.element').css('top', (landscapeHeight - elementHeight) + 'px');
 }
 
 /*
