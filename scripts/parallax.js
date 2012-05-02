@@ -10,11 +10,12 @@ var elementPathPostfix = '.png';
 /**
  * Variables for elements in the landscape
  */
-var landscape, level0, level1, level2;
+var $landscape, $level0, $level1, $level2;
 var landscapeHeight;
 var backgroundMax;
 var levelWidth;
 var elementWidth, elementHeight;
+var $level0Elements, $level1Elements, $level2Elements;
 
 /**
  * Variables for manipulating elements in the landscape
@@ -31,11 +32,10 @@ var level0ElementHalfWidth;
 var level1ElementHalfWidth;
 var level2ElementHalfWidth;
 var frontCount = 3; // Start with 3 elements in front level
-var level0MinMove = 10;
-var level1MinMove = 20;
-var level2MinMove = 40;
-var levelMoveOffset = 10;
-var level1Left = true; // Keep track of level 1 movement - alternate
+var level0MaxMove = 5;
+var level1MaxMove = 10;
+var level2MaxMove = 20;;
+var level1WithMouse = true; // Keep track of level 1 movement - alternate
 
 /*
  * When the document is ready, set everything up.  Uses the "shortcut" function 
@@ -64,17 +64,20 @@ function setUp() {
     .append('<img class="element" src="images/element0.png" />')
     .append('<img class="element" src="images/element1.png" />')
     .append('<img class="element" src="images/element2.png" />');
+  $level0Elements = $level0.find('.element');
   
   // Initial level 1 elements
   $level1
     .append('<img class="element" src="images/element0.png" />')
     .append('<img class="element" src="images/element5.png" />');
+  $level1Elements = $level1.find('.element');
   
   // Initial level 2 elements
   $level2
     .append('<img class="element" src="images/element3.png" />')
     .append('<img class="element" src="images/element4.png" />')
     .append('<img class="element" src="images/element5.png" />');
+  $level2Elements = $level2.find('.element');
 
   // Get the height of the current background image
   var backgroundImage = new Image();
@@ -104,9 +107,9 @@ function setUp() {
     level1ElementHalfWidth = (elementWidth * level1Scale) / 2;
     level2ElementHalfWidth = (elementWidth * level2Scale) / 2;
     // Set initial element positions here since they depend on above variables
-    $level0.find('.element').each(level0RandomLocation);
-    $level1.find('.element').each(level1RandomLocation);
-    $level2.find('.element').each(level2RandomLocation);
+    $level0Elements.each(level0RandomLocation);
+    $level1Elements.each(level1RandomLocation);
+    $level2Elements.each(level2RandomLocation);
   }
   element.src = elementPathPrefix + 0 + elementPathPostfix;
   
@@ -225,48 +228,84 @@ function changePositions(event) {
    */
   
   // Edit the position of level 0 elements - follow mouse x, follow mouse y
-  $level0.find('.element').each(function() {
+  $level0Elements.each(function() {
     var defaultTop = $(this).data('defaultTop');
     var defaultLeft = $(this).data('defaultLeft');
     var top, left;
-    if (mouseY < halfHeight) {
-      top = defaultTop + (mouseY / halfHeight * 5) - 5;
-    }
-    else {
-      top = defaultTop + ((mouseY - halfHeight) / halfHeight * 5);
-    }
-    if (mouseX < halfWidth) {
-      left = defaultLeft + (mouseX / halfWidth * 5) - 5;
-    }
-    else {
-      left = defaultLeft + ((mouseX - halfWidth) / halfWidth * 5);
-    }
+    top = getTop(mouseY, halfHeight, defaultTop, level0MaxMove);
+    left = getLeftWithMouse(mouseX, halfWidth, defaultLeft, level0MaxMove);
     setToLocation($(this), top, left);
   });
   
   // Edit the position of level 1 elements - alternating mouse x, follow mouse y
-  
-  
-  // Edit the position of level 2 elements - opposite mouse x, follow mouse y
-  $level2.find('.element').each(function() {
+  $level1Elements.each(function() {
     var defaultTop = $(this).data('defaultTop');
     var defaultLeft = $(this).data('defaultLeft');
-    var top, left;
-    if (mouseY < halfHeight) {
-      top = defaultTop + (mouseY / halfHeight * 20) - 20;
+    var top = getTop(mouseY, halfHeight, defaultTop, level1MaxMove);
+    var left;
+    if (level1WithMouse) {
+      left = getLeftWithMouse(mouseX, halfWidth, defaultLeft, level1MaxMove);
     }
     else {
-      top = defaultTop + ((mouseY - halfHeight) / halfHeight * 20);
-    }
-    if (mouseX < halfWidth) {
-      left = defaultLeft + 20 - (mouseX / halfWidth * 20);
-    }
-    else {
-      left = defaultLeft - ((mouseX - halfWidth) / halfWidth * 20);
+      left = getLeftOppMouse(mouseX, halfWidth, defaultLeft, level1MaxMove);
     }
     setToLocation($(this), top, left);
   });
   
+  // Edit the position of level 2 elements - opposite mouse x, follow mouse y
+  $level2Elements.each(function() {
+    var defaultTop = $(this).data('defaultTop');
+    var defaultLeft = $(this).data('defaultLeft');
+    var top = getTop(mouseY, halfHeight, defaultTop, level2MaxMove);
+    var left = getLeftOppMouse(mouseX, halfWidth, defaultLeft, level2MaxMove);
+    setToLocation($(this), top, left);
+  });
+  
+}
+
+/*
+ * Returns the top value for an element based on the current mouse y and half
+ * of the window height.  Follows the vertical movement of the mouse.
+ */
+function getTop(mouseY, halfHeight, defaultTop, offset) {
+
+  if (mouseY < halfHeight) {
+    return defaultTop + (mouseY / halfHeight * offset) - offset;
+  }
+  else {
+    return defaultTop + ((mouseY - halfHeight) / halfHeight * offset);
+  }
+
+}
+
+/*
+ * Returns the left value for an element based on the current mouse x and half
+ * of the window width.  Follows the horizontal movement of the mouse.
+ */
+function getLeftWithMouse(mouseX, halfWidth, defaultLeft, offset) {
+
+  if (mouseX < halfWidth) {
+    return defaultLeft + (mouseX / halfWidth * offset) - offset;
+  }
+  else {
+    return defaultLeft + ((mouseX - halfWidth) / halfWidth * offset);
+  }
+
+}
+
+/*
+ * Returns the left value for an element based on the current mouse x and half 
+ * of the window width.  Moves opposite to the horizontal movement of the mouse.
+ */
+function getLeftOppMouse(mouseX, halfWidth, defaultLeft, offset) {
+
+  if (mouseX < halfWidth) {
+    return defaultLeft + offset - (mouseX / halfWidth * offset);
+  }
+  else {
+    return defaultLeft - ((mouseX - halfWidth) / halfWidth * offset);
+  }
+
 }
 
 /*
