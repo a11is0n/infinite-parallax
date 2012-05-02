@@ -34,7 +34,7 @@ var level2ElementHalfWidth;
 var frontCount = 3; // Start with 3 elements in front level
 var level0MaxMove = 5;
 var level1MaxMove = 10;
-var level2MaxMove = 20;;
+var level2MaxMove = 20;
 var level1WithMouse = true; // Keep track of level 1 movement - alternate
 
 /*
@@ -49,12 +49,12 @@ $(setUp);
 function setUp() {
 
   // Set the variables for elements in the landscape
-  $landscape = $('#landscape');
-  $level0 = $('#level-0');
-  $level1 = $('#level-1');
-  $level2 = $('#level-2');
+  $landscape = $('div#landscape');
+  $level0 = $landscape.find('div.level#level-0');
+  $level1 = $landscape.find('div.level#level-1');
+  $level2 = $landscape.find('div.level#level-2');
   landscapeHeight = $landscape.height();
-  levelWidth = $('.level').width();
+  levelWidth = $landscape.find('div.level').width();
   
   // Set the variables for manipulating elements in the landscape
   level2Top = 0;
@@ -96,10 +96,12 @@ function setUp() {
     // These are set here since they depend on elementWidth and elementHeight
     level0Top = landscapeHeight - elementHeight - (level0Offset / 2);
     level1Top = ((landscapeHeight - (elementHeight * level1Scale)) / 2) - (level1Offset / 2);
+    // Starting x-locations of three-element levels
     var third = levelWidth / 3;
     triple[0] = (third / 2);
     triple[1] = triple[0] + third;
     triple[2] = triple[1] + third;
+    // Starting x-locations of two-element levels
     var half = levelWidth / 2;
     double[0] = third;
     double[1] = third * 2;
@@ -121,13 +123,21 @@ function setUp() {
 
 /*
  * Calculate a random location for a level 0 element, set the element to that
- * location, and store that default location in the element's data
+ * location, and store that default location in the element's data.
  */
 function level0RandomLocation(index) {
 
   // Calculate random default location values
   var defaultTop = (Math.random() * level0Offset) + level0Top;
-  var defaultLeft = (Math.random() * level0Offset) + triple[index] - level0ElementHalfWidth;
+  var startLocation;
+  // Assume that frontCount is either 2 or 3
+  if (frontCount === 2) {
+    startLocation = double[index];
+  }
+  else {
+    startLocation = triple[index];
+  }
+  var defaultLeft = (Math.random() * level0Offset) + startLocation - level0ElementHalfWidth;
   
   // Set element to default location and store that location
   setStoreDefaultLocation($(this), defaultTop, defaultLeft);
@@ -136,13 +146,21 @@ function level0RandomLocation(index) {
 
 /*
  * Calculate a random location for a level 2 element, set the element to that
- * location, and store that default location in the element's data
+ * location, and store that default location in the element's data.
  */
 function level1RandomLocation(index) {
 
   // Calculate random default location values
   var defaultTop = (Math.random() * level1Offset) + level1Top;
-  var defaultLeft = (Math.random() * level1Offset) + double[index] - level1ElementHalfWidth;
+  var startLocation;
+  // This level has 2 elements if frontCount is 3 and 3 elements if frontCount is 2
+  if (frontCount === 3) {
+    startLocation = double[index];
+  }
+  else {
+    startLocation = triple[index];
+  }
+  var defaultLeft = (Math.random() * level1Offset) + startLocation - level1ElementHalfWidth;
   
   // Set element to default location and store that location
   setStoreDefaultLocation($(this), defaultTop, defaultLeft);
@@ -151,13 +169,21 @@ function level1RandomLocation(index) {
 
 /*
  * Calculate a random location for a level 2 element, set the element to that
- * location, and store that default location in the element's data
+ * location, and store that default location in the element's data.
  */
-function level2RandomLocation(index) {
+function level2RandomLocation(index, num) {
 
   // Calculate random default location values
   var defaultTop = (Math.random() * level2Offset) + level2Top;
-  var defaultLeft = (Math.random() * level2Offset) + triple[index] - level2ElementHalfWidth;
+  var startLocation;
+  // Assume that frontCount is either 2 or 3
+  if (frontCount === 2) {
+    startLocation = double[index];
+  }
+  else {
+    startLocation = triple[index];
+  }
+  var defaultLeft = (Math.random() * level2Offset) + startLocation - level2ElementHalfWidth;
   
   // Set element to default location and store that location
   setStoreDefaultLocation($(this), defaultTop, defaultLeft);
@@ -165,7 +191,7 @@ function level2RandomLocation(index) {
 }
 
 /*
- * Set and store default locations of an element
+ * Set and store default locations of an element.
  */
 function setStoreDefaultLocation(element, top, left) {
 
@@ -183,7 +209,7 @@ function setStoreDefaultLocation(element, top, left) {
 }
 
 /*
- * Set an element to a given location
+ * Set an element to a given location.
  */
 function setToLocation(element, top, left) {
 
@@ -313,14 +339,6 @@ function getLeftOppMouse(mouseX, halfWidth, defaultLeft, offset) {
  * landscape to simulate moving "forward" into the landscape.
  */
 function moveForward(event) {
-
-  // Save the current window width and height
-  var width = $(window).width();
-  var height = $(window).height();
-  
-  // Save the current mouseX and mouseY
-  var mouseX = event.pageX;
-  var mouseY = event.pageY;
 
   alert('forward');
 
