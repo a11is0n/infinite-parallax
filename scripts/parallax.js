@@ -6,6 +6,7 @@ var backgroundPath = 'images/background.png';
 var backgroundHeight;
 var elementPathPrefix = 'images/element';
 var elementPathPostfix = '.png';
+var elementCount = 6;
 
 /**
  * Variables for elements in the landscape
@@ -171,7 +172,7 @@ function level1RandomLocation(index) {
  * Calculate a random location for a level 2 element, set the element to that
  * location, and store that default location in the element's data.
  */
-function level2RandomLocation(index, num) {
+function level2RandomLocation(index) {
 
   // Calculate random default location values
   var defaultTop = (Math.random() * level2Offset) + level2Top;
@@ -253,36 +254,38 @@ function changePositions(event) {
    * based on that.
    */
   
-  // Edit the position of level 0 elements - follow mouse x, follow mouse y
+  // Edit the position of level 0 elements - follow mouse x and y
   $level0Elements.each(function() {
     var defaultTop = $(this).data('defaultTop');
     var defaultLeft = $(this).data('defaultLeft');
     var top, left;
-    top = getTop(mouseY, halfHeight, defaultTop, level0MaxMove);
+    top = getTopWithMouse(mouseY, halfHeight, defaultTop, level0MaxMove);
     left = getLeftWithMouse(mouseX, halfWidth, defaultLeft, level0MaxMove);
     setToLocation($(this), top, left);
   });
   
-  // Edit the position of level 1 elements - alternating mouse x, follow mouse y
+  // Edit the position of level 1 elements - alternate mouse x and y
   $level1Elements.each(function() {
     var defaultTop = $(this).data('defaultTop');
     var defaultLeft = $(this).data('defaultLeft');
-    var top = getTop(mouseY, halfHeight, defaultTop, level1MaxMove);
+    var top, left;
     var left;
     if (level1WithMouse) {
+      top = getTopWithMouse(mouseY, halfHeight, defaultTop, level1MaxMove);
       left = getLeftWithMouse(mouseX, halfWidth, defaultLeft, level1MaxMove);
     }
     else {
+      top = getTopOppMouse(mouseY, halfHeight, defaultTop, level1MaxMove);
       left = getLeftOppMouse(mouseX, halfWidth, defaultLeft, level1MaxMove);
     }
     setToLocation($(this), top, left);
   });
   
-  // Edit the position of level 2 elements - opposite mouse x, follow mouse y
+  // Edit the position of level 2 elements - opposite mouse x and y
   $level2Elements.each(function() {
     var defaultTop = $(this).data('defaultTop');
     var defaultLeft = $(this).data('defaultLeft');
-    var top = getTop(mouseY, halfHeight, defaultTop, level2MaxMove);
+    var top = getTopOppMouse(mouseY, halfHeight, defaultTop, level2MaxMove);
     var left = getLeftOppMouse(mouseX, halfWidth, defaultLeft, level2MaxMove);
     setToLocation($(this), top, left);
   });
@@ -293,13 +296,28 @@ function changePositions(event) {
  * Returns the top value for an element based on the current mouse y and half
  * of the window height.  Follows the vertical movement of the mouse.
  */
-function getTop(mouseY, halfHeight, defaultTop, offset) {
+function getTopWithMouse(mouseY, halfHeight, defaultTop, offset) {
 
   if (mouseY < halfHeight) {
     return defaultTop + (mouseY / halfHeight * offset) - offset;
   }
   else {
     return defaultTop + ((mouseY - halfHeight) / halfHeight * offset);
+  }
+
+}
+
+/*
+ * Returns the top value for an element based on the current mouse y and half
+ * of the window height.  Moves opposite to the vertical movement of the mouse.
+ */
+function getTopOppMouse(mouseY, halfHeight, defaultTop, offset) {
+
+  if (mouseY < halfHeight) {
+    return defaultTop + offset - (mouseY / halfHeight * offset);
+  }
+  else {
+    return defaultTop - ((mouseY - halfHeight) / halfHeight * offset);
   }
 
 }
@@ -340,6 +358,38 @@ function getLeftOppMouse(mouseX, halfWidth, defaultLeft, offset) {
  */
 function moveForward(event) {
 
-  alert('forward');
+  // Count of elements in front level toggles between 2 and 3
+  frontCount = (frontCount === 2) ? 3 : 2;
+  
+  // Movement of level 1 toggles
+  level1WithMouse = !level1WithMouse;
+  
+  /*
+   * First remove the elements in level 0.  Use the same variable to refer to
+   * the current level 1 elements, then move those into level 0 and give them
+   * a new random default location
+   */
+  $level0Elements.remove();
+  $level0Elements = $level1Elements;
+  $level0Elements
+    .appendTo($level0)
+    .each(level0RandomLocation);
+  
+  /*
+   * Use the level 1 variable to refer to current level 2 elements, then move 
+   * those into level 1 and give them a new random default location
+   */
+  $level1Elements = $level2Elements;
+  $level1Elements
+    .appendTo($level1)
+    .each(level1RandomLocation);
+  
+  // Add random elements into level 2 and give them random default locations
+  for (var i = 0; i < frontCount; i++) {
+    var rand = Math.floor(Math.random() * elementCount);
+    $level2.append('<img class="element" src="images/element' + rand + '.png" />')
+  }
+  $level2Elements = $level2.find('.element');
+  $level2Elements.each(level2RandomLocation);
 
 }
