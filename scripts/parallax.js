@@ -11,12 +11,12 @@ var elementCount = 6;
 /**
  * Variables for elements in the landscape
  */
-var $landscape, $level0, $level1, $level2;
+var $landscape, $levelf, $level0, $level1, $level2;
 var landscapeHeight;
 var backgroundMax;
 var levelWidth;
 var elementWidth, elementHeight;
-var $level0Elements, $level1Elements, $level2Elements;
+var $levelfElements, $level0Elements, $level1Elements, $level2Elements;
 
 /**
  * Variables for manipulating elements in the landscape
@@ -29,6 +29,8 @@ var level1Offset = 20;
 var level2Offset = 40;
 var triple = []; // x-values of centers for 3-element levels
 var double = []; // x-values of centers for 2-element levels
+var level1Width, level1Height;
+var level2Width, level2Height;
 var level0ElementHalfWidth;
 var level1ElementHalfWidth;
 var level2ElementHalfWidth;
@@ -37,6 +39,10 @@ var level0MaxMove = 5;
 var level1MaxMove = 10;
 var level2MaxMove = 20;
 var level1WithMouse = true; // Keep track of level 1 movement - alternate
+var levelfDone = true;
+var level0Done = true;
+var level1Done = true;
+var level2Done = true;
 
 /*
  * When the document is ready, set everything up.  Uses the "shortcut" function 
@@ -51,6 +57,7 @@ function setUp() {
 
   // Set the variables for elements in the landscape
   $landscape = $('div#landscape');
+  $levelf = $landscape.find('div.level#level-f');
   $level0 = $landscape.find('div.level#level-0');
   $level1 = $landscape.find('div.level#level-1');
   $level2 = $landscape.find('div.level#level-2');
@@ -106,13 +113,35 @@ function setUp() {
     var half = levelWidth / 2;
     double[0] = third;
     double[1] = third * 2;
+    level1Width = elementWidth * level1Scale;
+    level1Height = elementHeight * level1Scale;
+    level2Width = elementWidth * level2Scale;
+    level2Height = elementHeight * level2Scale;
     level0ElementHalfWidth = elementWidth / 2;
-    level1ElementHalfWidth = (elementWidth * level1Scale) / 2;
-    level2ElementHalfWidth = (elementWidth * level2Scale) / 2;
-    // Set initial element positions here since they depend on above variables
-    $level0Elements.each(level0RandomLocation);
-    $level1Elements.each(level1RandomLocation);
-    $level2Elements.each(level2RandomLocation);
+    level1ElementHalfWidth = level1Width / 2;
+    level2ElementHalfWidth = level2Width / 2;
+    // Set initial element sizes/positions here since they depend on above
+    $level0Elements.each(function(index) {
+      $this = $(this);
+      var location = getStoreLevel0RandomLocation($this, index);
+      setToLocation($this, location.top, location.left);
+    });
+    $level1Elements
+      .width(level1Width)
+      .height(level1Height)
+      .each(function(index) {
+        $this = $(this);
+        var location = getStoreLevel1RandomLocation($this, index);
+        setToLocation($this, location.top, location.left);
+      });
+    $level2Elements
+      .width(level2Width)
+      .height(level2Height)
+      .each(function(index) {
+        $this = $(this);
+        var location = getStoreLevel2RandomLocation($this, index);
+        setToLocation($this, location.top, location.left);
+      });
   }
   element.src = elementPathPrefix + 0 + elementPathPostfix;
   
@@ -123,10 +152,10 @@ function setUp() {
 }
 
 /*
- * Calculate a random location for a level 0 element, set the element to that
- * location, and store that default location in the element's data.
+ * Calculate a random location for a level 0 element, store that default 
+ * location in the element's data, and return the values in an object
  */
-function level0RandomLocation(index) {
+function getStoreLevel0RandomLocation(element, index) {
 
   // Calculate random default location values
   var defaultTop = (Math.random() * level0Offset) + level0Top;
@@ -140,16 +169,19 @@ function level0RandomLocation(index) {
   }
   var defaultLeft = (Math.random() * level0Offset) + startLocation - level0ElementHalfWidth;
   
-  // Set element to default location and store that location
-  setStoreDefaultLocation($(this), defaultTop, defaultLeft);
+  // Store the default location
+  setDefaultLocation(element, defaultTop, defaultLeft);
+  
+  // Return the values
+  return {'top': defaultTop, 'left': defaultLeft};
 
 }
 
 /*
- * Calculate a random location for a level 2 element, set the element to that
- * location, and store that default location in the element's data.
+ * Calculate a random location for a level 2 element, store that default
+ * location in the element's data, and return the values in an object
  */
-function level1RandomLocation(index) {
+function getStoreLevel1RandomLocation(element, index) {
 
   // Calculate random default location values
   var defaultTop = (Math.random() * level1Offset) + level1Top;
@@ -163,16 +195,19 @@ function level1RandomLocation(index) {
   }
   var defaultLeft = (Math.random() * level1Offset) + startLocation - level1ElementHalfWidth;
   
-  // Set element to default location and store that location
-  setStoreDefaultLocation($(this), defaultTop, defaultLeft);
+  // Store the default location
+  setDefaultLocation(element, defaultTop, defaultLeft);
+  
+  // Return the values
+  return {'top': defaultTop, 'left': defaultLeft};
 
 }
 
 /*
- * Calculate a random location for a level 2 element, set the element to that
- * location, and store that default location in the element's data.
+ * Calculate a random location for a level 2 element, store that default 
+ * in the element's data, and return the values in an object
  */
-function level2RandomLocation(index) {
+function getStoreLevel2RandomLocation(element, index) {
 
   // Calculate random default location values
   var defaultTop = (Math.random() * level2Offset) + level2Top;
@@ -186,22 +221,16 @@ function level2RandomLocation(index) {
   }
   var defaultLeft = (Math.random() * level2Offset) + startLocation - level2ElementHalfWidth;
   
-  // Set element to default location and store that location
-  setStoreDefaultLocation($(this), defaultTop, defaultLeft);
+  // Store the default location
+  setDefaultLocation(element, defaultTop, defaultLeft);
+  
+  // Return the values
+  return {'top': defaultTop, 'left': defaultLeft};
 
 }
 
-/*
- * Set and store default locations of an element.
- */
-function setStoreDefaultLocation(element, top, left) {
+function setDefaultLocation(element, top, left) {
 
-  // Set the element to the default location
-  element.css({
-    'top': top + 'px',
-    'left': left + 'px'
-  });
-  
   // Store default location as data
   element
     .data('defaultTop', top)
@@ -226,6 +255,11 @@ function setToLocation(element, top, left) {
  * elements in the landscape based on mouse location and window size.
  */
 function changePositions(event) {
+
+  // Check if in the middle of moving forward - if so, don't change positions
+  if (!levelfDone || !level0Done || !level1Done || !level2Done) {
+    return;
+  }
 
   // Save the current window values
   var width = $(window).width();
@@ -358,6 +392,12 @@ function getLeftOppMouse(mouseX, halfWidth, defaultLeft, offset) {
  */
 function moveForward(event) {
 
+  // Moving foward not done yet
+  levelfDone = false;
+  level0Done = false;
+  level1Done = false;
+  level2Done = false;
+
   // Count of elements in front level toggles between 2 and 3
   frontCount = (frontCount === 2) ? 3 : 2;
   
@@ -365,31 +405,64 @@ function moveForward(event) {
   level1WithMouse = !level1WithMouse;
   
   /*
-   * First remove the elements in level 0.  Use the same variable to refer to
-   * the current level 1 elements, then move those into level 0 and give them
-   * a new random default location
+   * Shift all the current elements forward a level.  Level f is solely used
+   * to hold the current level 0 elements until they are removed.
    */
-  $level0Elements.remove();
+  $levelfElements = $level0Elements;
+  $levelf.append($levelfElements);
   $level0Elements = $level1Elements;
-  $level0Elements
-    .appendTo($level0)
-    .each(level0RandomLocation);
+  $level0.append($level0Elements);
+  $level1Elements = $level2Elements;
+  $level1.append($level1Elements);
   
   /*
-   * Use the level 1 variable to refer to current level 2 elements, then move 
-   * those into level 1 and give them a new random default location
+   * Fade out and remove level f elements, animate the size and position changes
+   * of level 0 and 1 elements, and fade in level 2 elements
    */
-  $level1Elements = $level2Elements;
-  $level1Elements
-    .appendTo($level1)
-    .each(level1RandomLocation);
-  
-  // Add random elements into level 2 and give them random default locations
+  $levelfElements.fadeOut('slow', function() {
+    $(this).remove();
+    levelfDone = true;
+  });
+  $level0Elements.each(function(index) {
+    $this = $(this);
+    var location = getStoreLevel0RandomLocation($this, index);
+    $this.animate({
+      'width': elementWidth,
+      'height': elementHeight,
+      'top': location.top,
+      'left': location.left
+    }, 'slow', function() {
+      level0Done = true;
+    });
+  });
+  $level1Elements.each(function(index) {
+    $this = $(this);
+    var location = getStoreLevel1RandomLocation($this, index);
+    $this.animate({
+      'width': level1Width,
+      'height': level1Height,
+      'top': location.top,
+      'left': location.left
+    }, 'slow', function() {
+      level1Done = true;
+    });
+  });
   for (var i = 0; i < frontCount; i++) {
     var rand = Math.floor(Math.random() * elementCount);
     $level2.append('<img class="element" src="images/element' + rand + '.png" />')
   }
   $level2Elements = $level2.find('.element');
-  $level2Elements.each(level2RandomLocation);
+  $level2Elements
+    .width(level2Width)
+    .height(level2Height)
+    .hide()
+    .each(function(index) {
+      $this = $(this);
+      var location = getStoreLevel2RandomLocation($this, index);
+      setToLocation($this, location.top, location.left);
+    })
+    .fadeIn('slow', function() {
+      level2Done = true;
+    });
 
 }

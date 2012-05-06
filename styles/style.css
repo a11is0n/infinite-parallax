@@ -32,6 +32,10 @@ h1 {
   position: absolute;
   top: 0px;
   left: 50%;
+  transition-duration: 600ms;
+}
+#level-f {
+  z-index: 4;
 }
 #level-0 {
   z-index: 3;
@@ -39,28 +43,11 @@ h1 {
 #level-1 {
   z-index: 2;
 }
-#level-1 .element {
-  -webkit-transform: scale(.8);
-  -moz-transform: scale(.8);
-  -o-transform: scale(.8);
-  transform: scale(.8);
-}
 #level-2 {
   z-index: 1;
-}
-#level-2 .element {
-  -webkit-transform: scale(.6);
-  -moz-transform: scale(.6);
-  -o-transform: scale(.6);
-  transform: scale(.6);
 }
 .element {
   margin: 0px;
   padding: 0px;
   position: absolute;
-  border: 1px solid black;
-  -webkit-transform-origin: 0px 0px;
-  -moz-transform-origin: 0px 0px;
-  -o-transform-origin: 0px 0px;
-  transform-origin: 0px 0px;
 }
