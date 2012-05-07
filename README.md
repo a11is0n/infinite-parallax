@@ -14,6 +14,6 @@ palette "[a door hue](http://design-seeds.com/index.php/home/entry/a-door-hue
 the color palette.
 
 If I get bored in the future I may make different themes; the way I've written
-it now, it woudldn't require too many tweeks, as I've assumed all images (other
+it now, it wouldn't require too many tweeks, as I've assumed all images (other
 than the background) are the same size, and I calculate values based on the 
 image size, which is retrieved in the JavaScript after loading one of them.
